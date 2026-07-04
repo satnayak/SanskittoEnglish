@@ -230,7 +230,7 @@ def run_epoch(loader,train=True,tf=.5):
         total += loss.item()*src.size(0)
     return total/len(loader.dataset)
 
-EPOCHS=20
+EPOCHS=10
 PATIENCE=4
 best=float("inf"); bad=0
 history=[]
@@ -275,7 +275,9 @@ for i in range(5):
     print("REF:",r.Sentence_en)
     print("HYP:",hyp,"\n")
 
-!pip install -q sacrebleu
+# Commented out IPython magic to ensure Python compatibility.
+#!pip install -q sacrebleu
+# %pip install -q sacrebleu bert-score
 
 # Corpus BLEU
 import sacrebleu
@@ -291,8 +293,7 @@ test_bleu=sacrebleu.corpus_bleu(test_hyp,[test_df.Sentence_en.tolist()])
 print("Dev BLEU :",dev_bleu.score)
 print("Test BLEU:",test_bleu.score)
 
-# Commented out IPython magic to ensure Python compatibility.
-# %pip install -q sacrebleu bert-score
+#%pip install -q sacrebleu bert-score
 
 import torch
 import numpy as np
@@ -324,6 +325,22 @@ print("Number of predictions:", len(test_hyp))
 print("First 5 predictions:")
 for x in test_hyp[:5]:
     print(x)
+
+# Generate test predictions first
+test_hyp = predict_df(test_df)
+
+# Create submission.csv
+submission_df = pd.DataFrame({
+    "Source_id": test_df["Source_id"],
+    "Sentence_en": test_hyp
+})
+
+submission_df.to_csv("submission.csv", index=False)
+
+print("submission.csv created successfully")
+print("Location:", os.path.abspath("submission.csv"))
+
+display(submission_df.head())
 
 from bert_score import score
 
